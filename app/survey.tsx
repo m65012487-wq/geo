@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Alert, TextInput, Modal, Pressable,
 } from 'react-native';
@@ -10,6 +10,7 @@ import { Button, Card, QualityBadge } from '../src/components/ui';
 import { SurveyCanvas } from '../src/components/SurveyCanvas';
 import { useGnss } from '../src/lib/useGnss';
 import { fmtCoord, fmtMeters } from '../src/lib/geo';
+import { parseCrs, projectPoint, hasPlane, crsShort } from '../src/lib/crs';
 import { useActiveProject } from '../src/lib/useActiveProject';
 import {
   listPoints, listFeatures, addPoint, suggestPointName, listCodes, kvGet,
@@ -23,6 +24,13 @@ export default function SurveyScreen() {
   const router = useRouter();
   const { project } = useActiveProject();
   const { position, status, errorMsg, start } = useGnss();
+
+  const crs = useMemo(() => parseCrs(project?.crs), [project?.crs]);
+  const livePlane = position && hasPlane(crs)
+    ? projectPoint(crs, position.latitude, position.longitude)
+    : null;
+  const avgPlane = (p: LivePosition | null) =>
+    p && hasPlane(crs) ? projectPoint(crs, p.latitude, p.longitude) : null;
 
   const [points, setPoints] = useState<SurveyPoint[]>([]);
   const [features, setFeatures] = useState<Feature[]>([]);
@@ -178,6 +186,12 @@ export default function SurveyScreen() {
             <View style={styles.coordGrid}>
               <Coord label="Широта" value={fmtCoord(position.latitude)} />
               <Coord label="Долгота" value={fmtCoord(position.longitude)} />
+              {livePlane ? (
+                <>
+                  <Coord label={`Northing · ${crsShort(crs)}`} value={fmtMeters(livePlane.n, 3)} />
+                  <Coord label={`Easting · ${crsShort(crs)}`} value={fmtMeters(livePlane.e, 3)} />
+                </>
+              ) : null}
               <Coord label="Высота" value={fmtMeters(position.elevation, 2)} />
               <Coord label="Точность H" value={fmtMeters(position.hAccuracy, 2)} />
             </View>
@@ -222,6 +236,14 @@ export default function SurveyScreen() {
                 <Text style={styles.capCoord}>
                   {avg.latitude.toFixed(6)}, {avg.longitude.toFixed(6)}
                 </Text>
+                {(() => {
+                  const pl = avgPlane(avg);
+                  return pl ? (
+                    <Text style={styles.capCoord}>
+                      N {pl.n.toFixed(3)} · E {pl.e.toFixed(3)} ({crsShort(crs)})
+                    </Text>
+                  ) : null;
+                })()}
                 <Text style={styles.capMeta}>
                   H {avg.elevation.toFixed(2)} м · ±{avg.hAccuracy.toFixed(2)} м · {avgEpochs} эпох
                 </Text>

@@ -7,6 +7,8 @@ import { shared } from '../../src/theme/shared';
 import { Button, Card } from '../../src/components/ui';
 import { listProjects, createProject, deleteProject, kvGet } from '../../src/db/database';
 import { setActiveProject } from '../../src/lib/useActiveProject';
+import { CrsPicker } from '../../src/components/CrsPicker';
+import { parseCrs, formatCrs, crsShort, type CrsSpec } from '../../src/lib/crs';
 import type { Project } from '../../src/db/types';
 
 export default function ProjectsScreen() {
@@ -16,7 +18,7 @@ export default function ProjectsScreen() {
   const [modal, setModal] = useState(false);
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
-  const [crs, setCrs] = useState('WGS84 / UTM 37N');
+  const [crs, setCrs] = useState<CrsSpec>({ kind: 'utm', zone: 37, south: false });
 
   const load = useCallback(() => {
     listProjects().then(setProjects);
@@ -31,7 +33,7 @@ export default function ProjectsScreen() {
 
   const handleCreate = async () => {
     if (!name.trim()) { Alert.alert('Введите название проекта'); return; }
-    const p = await createProject(name.trim(), desc.trim(), crs.trim() || 'WGS84');
+    const p = await createProject(name.trim(), desc.trim(), formatCrs(crs));
     setModal(false); setName(''); setDesc('');
     await openProject(p);
   };
@@ -70,7 +72,7 @@ export default function ProjectsScreen() {
                   {!!item.description && (
                     <Text style={styles.projectDesc} numberOfLines={1}>{item.description}</Text>
                   )}
-                  <Text style={styles.projectMeta}>{item.crs} · {item.pointCount ?? 0} точек</Text>
+                  <Text style={styles.projectMeta}>{crsShort(parseCrs(item.crs))} · {item.pointCount ?? 0} точек</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
               </Card>
@@ -93,8 +95,7 @@ export default function ProjectsScreen() {
             <TextInput style={shared.input} value={desc} onChangeText={setDesc}
               placeholder="Кадастровая съёмка" placeholderTextColor={colors.textMuted} />
             <Text style={shared.label}>Система координат</Text>
-            <TextInput style={shared.input} value={crs} onChangeText={setCrs}
-              placeholderTextColor={colors.textMuted} />
+            <CrsPicker value={crs} onChange={setCrs} />
             <View style={styles.modalActions}>
               <Button label="Отмена" variant="secondary" onPress={() => setModal(false)} style={{ flex: 1 }} />
               <Button label="Создать" onPress={handleCreate} style={{ flex: 1 }} />
