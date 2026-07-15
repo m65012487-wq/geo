@@ -22,6 +22,7 @@ export async function initDatabase(): Promise<void> {
   const db = await getDb();
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
+    PRAGMA foreign_keys = ON;
     CREATE TABLE IF NOT EXISTS projects (
       id TEXT PRIMARY KEY NOT NULL,
       name TEXT NOT NULL,
@@ -202,9 +203,23 @@ export async function deletePoint(id: string, projectId: string): Promise<void> 
   await touchProject(projectId);
 }
 
+/**
+ * Предлагает следующее имя PT###. Берёт максимальный существующий номер, а не
+ * количество точек — иначе после удаления средней точки предложение совпало бы
+ * с уже существующим именем.
+ */
 export async function suggestPointName(projectId: string): Promise<string> {
-  const n = await countPoints(projectId);
-  return 'PT' + String(n + 1).padStart(3, '0');
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ name: string }>(
+    "SELECT name FROM points WHERE projectId = ? AND name GLOB 'PT[0-9]*'",
+    [projectId]
+  );
+  let max = 0;
+  for (const { name } of rows) {
+    const m = /^PT(\d+)$/.exec(name);
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  }
+  return 'PT' + String(max + 1).padStart(3, '0');
 }
 
 // ---------- Линии и полигоны ----------

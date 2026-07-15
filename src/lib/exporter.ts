@@ -46,7 +46,10 @@ export async function exportGeoJson(project: Project, points: SurveyPoint[], fea
           createdAt: new Date(p.createdAt).toISOString(),
         },
       })),
-      ...features.map((f) => ({
+      ...features
+        // Отбрасываем вырожденные объекты: полигон требует ≥3, линия ≥2 вершин.
+        .filter((f) => f.vertices.length >= (f.type === 'polygon' ? 3 : 2))
+        .map((f) => ({
         type: 'Feature' as const,
         geometry:
           f.type === 'polygon'
