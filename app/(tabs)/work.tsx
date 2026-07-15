@@ -7,6 +7,7 @@ import { Tile } from '../../src/components/Tile';
 import { Button } from '../../src/components/ui';
 import { useActiveProject } from '../../src/lib/useActiveProject';
 import { countPoints, countFeatures } from '../../src/db/database';
+import { parseCrs, crsShort } from '../../src/lib/crs';
 
 export default function WorkScreen() {
   const router = useRouter();
@@ -38,7 +39,13 @@ export default function WorkScreen() {
       <View style={styles.projectBanner}>
         <Text style={styles.projectLabel}>АКТИВНЫЙ ПРОЕКТ</Text>
         <Text style={styles.projectName}>{project.name}</Text>
-        <Text style={styles.projectCrs}>{project.crs}</Text>
+        <Text style={styles.projectCrs}>{crsShort(parseCrs(project.crs))}</Text>
+      </View>
+
+      <Text style={styles.groupTitle}>Оборудование</Text>
+      <View style={styles.grid}>
+        <Tile label="Подключение GNSS" icon="hardware-chip-outline"
+          onPress={() => router.push('/device')} />
       </View>
 
       <Text style={styles.groupTitle}>Съёмка</Text>

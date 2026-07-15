@@ -47,10 +47,11 @@ export default function SettingsScreen() {
 
       <Card style={{ marginTop: space.lg }}>
         <Text style={styles.cardTitle}>О приложении</Text>
-        <Text style={styles.aboutRow}>GeoField Pro — прототип, Фаза 2</Text>
-        <Text style={styles.aboutMuted}>Expo SDK 54 · SQLite офлайн · GPS телефона</Text>
+        <Text style={styles.aboutRow}>GeoField Pro — прототип, Фаза 3</Text>
+        <Text style={styles.aboutMuted}>Expo SDK 54 · SQLite офлайн · UTM / Гаусса-Крюгера</Text>
         <Text style={styles.aboutMuted}>
-          Подключение внешних GNSS-приёмников и карта — в Фазе 4 (нативная сборка).
+          Источники GNSS (GPS телефона · Демо RTK) — на вкладке «Работа» →
+          «Подключение GNSS». Bluetooth-приёмник и карта — в Фазе 4.
         </Text>
       </Card>
     </ScrollView>

@@ -47,6 +47,7 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="device" options={{ title: 'Подключение GNSS' }} />
           <Stack.Screen name="survey" options={{ title: 'Съёмка точек' }} />
           <Stack.Screen name="survey-feature" options={{ title: 'Съёмка объекта' }} />
           <Stack.Screen name="points" options={{ title: 'БД точек' }} />
