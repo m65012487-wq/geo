@@ -60,6 +60,11 @@ export default function RootLayout() {
           <Stack.Screen name="cogo/area" options={{ title: 'Площадь' }} />
           <Stack.Screen name="cogo/angles" options={{ title: 'Углы' }} />
           <Stack.Screen name="cogo/average" options={{ title: 'Осреднение' }} />
+          <Stack.Screen name="cogo/resection-distance" options={{ title: 'Линейная засечка' }} />
+          <Stack.Screen name="cogo/resection-bearing" options={{ title: 'Прямая засечка' }} />
+          <Stack.Screen name="cogo/offset" options={{ title: 'Проекция на линию' }} />
+          <Stack.Screen name="cogo/divide" options={{ title: 'Деление отрезка' }} />
+          <Stack.Screen name="cogo/deflection" options={{ title: 'Угол поворота' }} />
         </Stack>
       </SafeAreaProvider>
     </GestureHandlerRootView>

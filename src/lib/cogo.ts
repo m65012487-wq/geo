@@ -106,3 +106,88 @@ export function angleAt(a: NE, b: NE, c: NE): number {
   if (diff > 180) diff = 360 - diff;
   return diff;
 }
+
+// ---------------------------------------------------------------------------
+// COGO №2: засечки, проекция на линию, деление, угол поворота
+// ---------------------------------------------------------------------------
+
+/**
+ * Линейная засечка (пересечение двух окружностей): центры a,b и радиусы ra,rb.
+ * Возвращает 0, 1 или 2 решения (оба варианта положения определяемой точки).
+ */
+export function distanceDistanceIntersection(a: NE, ra: number, b: NE, rb: number): NE[] {
+  const dN = b.n - a.n;
+  const dE = b.e - a.e;
+  const d = Math.hypot(dN, dE);
+  if (d === 0) return []; // совпадающие центры
+  if (d > ra + rb + 1e-9) return []; // окружности не достают
+  if (d < Math.abs(ra - rb) - 1e-9) return []; // одна внутри другой
+  const t = (ra * ra - rb * rb + d * d) / (2 * d); // до основания перпендикуляра от a
+  const h = Math.sqrt(Math.max(0, ra * ra - t * t));
+  const mN = a.n + (t / d) * dN;
+  const mE = a.e + (t / d) * dE;
+  if (h < 1e-9) return [{ n: mN, e: mE }];
+  const oN = -(dE / d) * h;
+  const oE = (dN / d) * h;
+  return [
+    { n: mN + oN, e: mE + oE },
+    { n: mN - oN, e: mE - oE },
+  ];
+}
+
+/**
+ * Прямая засечка: пересечение двух направлений из a и b по азимутам (градусы).
+ * Возвращает null, если направления параллельны.
+ */
+export function bearingBearingIntersection(a: NE, azA: number, b: NE, azB: number): NE | null {
+  const dA = { n: Math.cos(azA * D2R), e: Math.sin(azA * D2R) };
+  const dB = { n: Math.cos(azB * D2R), e: Math.sin(azB * D2R) };
+  const cross = dA.e * dB.n - dA.n * dB.e;
+  if (Math.abs(cross) < 1e-12) return null;
+  const rN = b.n - a.n;
+  const rE = b.e - a.e;
+  const t = (rE * dB.n - rN * dB.e) / cross;
+  return { n: a.n + t * dA.n, e: a.e + t * dA.e };
+}
+
+/**
+ * Проекция точки p на прямую AB. station — расстояние вдоль AB от A до
+ * основания (может быть <0 или >|AB|); offset — знаковое смещение
+ * (+ вправо по ходу AB, − влево); foot — точка основания перпендикуляра.
+ */
+export function pointOnLine(p: NE, a: NE, b: NE): { station: number; offset: number; foot: NE } {
+  const dN = b.n - a.n;
+  const dE = b.e - a.e;
+  const L = Math.hypot(dN, dE);
+  if (L === 0) {
+    return { station: 0, offset: Math.hypot(p.n - a.n, p.e - a.e), foot: { n: a.n, e: a.e } };
+  }
+  const uN = dN / L;
+  const uE = dE / L;
+  const vN = p.n - a.n;
+  const vE = p.e - a.e;
+  const station = vN * uN + vE * uE;
+  const offset = uN * vE - uE * vN; // >0 — справа по ходу AB
+  return { station, offset, foot: { n: a.n + station * uN, e: a.e + station * uE } };
+}
+
+/** Деление отрезка AB на n равных частей → n+1 точек (включая A и B). */
+export function divideSegment(a: NE, b: NE, n: number): NE[] {
+  if (n < 1) return [{ n: a.n, e: a.e }];
+  const pts: NE[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    pts.push({ n: a.n + (b.n - a.n) * t, e: a.e + (b.e - a.e) * t });
+  }
+  return pts;
+}
+
+/**
+ * Угол поворота трассы по входящему и исходящему азимутам (градусы).
+ * Результат в диапазоне (−180, 180]: + вправо (по часовой), − влево.
+ */
+export function deflectionAngle(azIn: number, azOut: number): number {
+  let d = (((azOut - azIn) % 360) + 360) % 360;
+  if (d > 180) d -= 360;
+  return d;
+}
