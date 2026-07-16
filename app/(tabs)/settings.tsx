@@ -5,6 +5,7 @@ import { colors, space, font } from '../../src/theme/theme';
 import { shared } from '../../src/theme/shared';
 import { Card, Button } from '../../src/components/ui';
 import { kvGet, kvSet } from '../../src/db/database';
+import { exportBackup } from '../../src/lib/exporter';
 
 /** Настройки съёмки: число эпох усреднения и порог точности. */
 export default function SettingsScreen() {
@@ -26,6 +27,14 @@ export default function SettingsScreen() {
     Alert.alert('Сохранено', `Усреднение: ${e} эпох\nПорог точности: ${a} м`);
   };
 
+  const backup = async () => {
+    try {
+      await exportBackup();
+    } catch (e) {
+      Alert.alert('Ошибка', e instanceof Error ? e.message : 'Не удалось создать копию');
+    }
+  };
+
   return (
     <ScrollView style={shared.container} contentContainerStyle={shared.pad}>
       <Card>
@@ -43,6 +52,15 @@ export default function SettingsScreen() {
           Если точность хуже порога — приложение предупредит перед сохранением.
         </Text>
         <Button label="Сохранить" onPress={save} style={{ marginTop: space.lg }} />
+      </Card>
+
+      <Card style={{ marginTop: space.lg }}>
+        <Text style={styles.cardTitle}>Данные</Text>
+        <Text style={styles.hintText}>
+          Резервная копия всех проектов, точек, объектов и настроек в один
+          JSON-файл через системное меню «Поделиться».
+        </Text>
+        <Button label="Резервная копия БД" variant="secondary" onPress={backup} style={{ marginTop: space.md }} />
       </Card>
 
       <Card style={{ marginTop: space.lg }}>

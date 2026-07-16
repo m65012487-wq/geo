@@ -285,3 +285,34 @@ export async function deleteCode(id: string): Promise<void> {
   const db = await getDb();
   await db.runAsync('DELETE FROM codes WHERE id = ?', [id]);
 }
+
+// ---------- Резервная копия ----------
+
+export interface DatabaseDump {
+  version: number;
+  exportedAt: number;
+  projects: Project[];
+  points: SurveyPoint[];
+  features: Feature[];
+  codes: FeatureCode[];
+  kv: { key: string; value: string }[];
+}
+
+/** Полный снимок всех таблиц для резервной копии в JSON. */
+export async function dumpDatabase(): Promise<DatabaseDump> {
+  const db = await getDb();
+  const projects = await db.getAllAsync<Project>('SELECT * FROM projects');
+  const points = await db.getAllAsync<SurveyPoint>('SELECT * FROM points');
+  const featureRows = await db.getAllAsync<FeatureRow>('SELECT * FROM features');
+  const codes = await db.getAllAsync<FeatureCode>('SELECT * FROM codes');
+  const kv = await db.getAllAsync<{ key: string; value: string }>('SELECT * FROM kv');
+  return {
+    version: 1,
+    exportedAt: Date.now(),
+    projects,
+    points,
+    features: featureRows.map(rowToFeature),
+    codes,
+    kv,
+  };
+}

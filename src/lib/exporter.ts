@@ -2,6 +2,7 @@ import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import type { Project, SurveyPoint, Feature } from '../db/types';
 import { parseCrs, hasPlane, projectPoint, crsShort } from './crs';
+import { dumpDatabase } from '../db/database';
 
 function sanitize(name: string): string {
   return name.replace(/[^\wа-яА-ЯёЁ-]+/g, '_').slice(0, 40) || 'project';
@@ -46,6 +47,13 @@ export async function exportPointsCsv(project: Project, points: SurveyPoint[]): 
 
   const csv = [header, ...lines].join('\n');
   await writeAndShare(`${sanitize(project.name)}_points.csv`, csv, 'text/csv');
+}
+
+/** Резервная копия всей базы (все проекты и таблицы) в один JSON-файл. */
+export async function exportBackup(): Promise<void> {
+  const dump = await dumpDatabase();
+  const stamp = new Date(dump.exportedAt).toISOString().slice(0, 10);
+  await writeAndShare(`geofield-backup-${stamp}.json`, JSON.stringify(dump, null, 1), 'application/json');
 }
 
 /** Экспорт всего проекта в GeoJSON (точки + линии + полигоны). */
