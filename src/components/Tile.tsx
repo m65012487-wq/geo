@@ -7,26 +7,32 @@ import { colors, space, radius, font } from '../theme/theme';
 interface TileProps {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
-  onPress: () => void;
+  onPress?: () => void;
   disabled?: boolean;
   badge?: string;
+  /** Метка «скоро» (напр. «Ф4») — плитка становится неактивной и приглушённой. */
+  soon?: string;
 }
 
 /** Крупная плитка меню в стиле LandStar — 3 в ряд, под перчатки. */
-export function Tile({ label, icon, onPress, disabled, badge }: TileProps) {
+export function Tile({ label, icon, onPress, disabled, badge, soon }: TileProps) {
+  const off = disabled || !!soon;
   return (
     <Pressable
       onPress={() => {
-        if (disabled) return;
+        if (off || !onPress) return;
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         onPress();
       }}
-      style={({ pressed }) => [styles.tile, { opacity: disabled ? 0.35 : pressed ? 0.8 : 1 }]}
+      style={({ pressed }) => [styles.tile, { opacity: off ? 0.4 : pressed ? 0.8 : 1 }]}
     >
       <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={30} color={colors.accent} />
+        <Ionicons name={icon} size={30} color={soon ? colors.textMuted : colors.accent} />
         {badge != null && (
           <View style={styles.badge}><Text style={styles.badgeText}>{badge}</Text></View>
+        )}
+        {soon != null && (
+          <View style={styles.soon}><Text style={styles.soonText}>{soon}</Text></View>
         )}
       </View>
       <Text style={styles.label} numberOfLines={2}>{label}</Text>
@@ -54,6 +60,14 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   badgeText: { color: colors.accentText, fontSize: 11, fontWeight: '800' },
+  soon: {
+    position: 'absolute', top: -6, right: -6,
+    backgroundColor: colors.surfaceRaised, borderRadius: radius.pill,
+    borderWidth: 1, borderColor: colors.borderStrong,
+    minWidth: 22, height: 20, paddingHorizontal: 6,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  soonText: { color: colors.textSecondary, fontSize: 10, fontWeight: '800', letterSpacing: 0.3 },
   label: {
     color: colors.textPrimary, fontSize: font.small,
     textAlign: 'center', marginTop: space.sm, lineHeight: 17,

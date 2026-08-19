@@ -9,6 +9,11 @@ import { useActiveProject } from '../../src/lib/useActiveProject';
 import { countPoints, countFeatures } from '../../src/db/database';
 import { parseCrs, crsShort } from '../../src/lib/crs';
 
+/**
+ * Рабочее пространство (вкладка «Работа») — операционный хаб в компоновке
+ * LandStar 8: Оборудование · Съёмка · Вынос · Обработка · Данные. Реализованные
+ * функции активны; запланированные показаны приглушённо с меткой фазы.
+ */
 export default function WorkScreen() {
   const router = useRouter();
   const { project } = useActiveProject();
@@ -44,24 +49,35 @@ export default function WorkScreen() {
 
       <Text style={styles.groupTitle}>Оборудование</Text>
       <View style={styles.grid}>
-        <Tile label="Подключение GNSS" icon="hardware-chip-outline"
-          onPress={() => router.push('/device')} />
+        <Tile label="Подключение GNSS" icon="hardware-chip-outline" onPress={() => router.push('/device')} />
       </View>
 
       <Text style={styles.groupTitle}>Съёмка</Text>
       <View style={styles.grid}>
-        <Tile label="Съёмка точек" icon="pin" badge={String(nPoints)}
-          onPress={() => router.push('/survey')} />
+        <Tile label="Съёмка точек" icon="pin" badge={String(nPoints)} onPress={() => router.push('/survey')} />
         <Tile label="Съёмка линии" icon="analytics" badge={String(nLines)}
           onPress={() => router.push({ pathname: '/survey-feature', params: { type: 'line' } })} />
         <Tile label="Съёмка полигона" icon="shapes" badge={String(nPolys)}
           onPress={() => router.push({ pathname: '/survey-feature', params: { type: 'polygon' } })} />
+        <Tile label="Контрольная точка" icon="checkmark-circle-outline" soon="Ф4" />
+        <Tile label="Видеосъёмка" icon="videocam-outline" soon="Ф5" />
       </View>
 
       <Text style={styles.groupTitle}>Вынос</Text>
       <View style={styles.grid}>
         <Tile label="Вынос точек" icon="flag"
           onPress={() => router.push({ pathname: '/points', params: { mode: 'stakeout' } })} />
+        <Tile label="Вынос линии" icon="git-branch-outline" soon="Ф4" />
+        <Tile label="Вынос откоса" icon="trending-down-outline" soon="Ф5" />
+        <Tile label="Вынос поверхности" icon="layers-outline" soon="Ф5" />
+      </View>
+
+      <Text style={styles.groupTitle}>Обработка</Text>
+      <View style={styles.grid}>
+        <Tile label="Калибровка участка" icon="contract-outline" soon="Ф4" />
+        <Tile label="Сдвиг базы" icon="move-outline" soon="Ф4" />
+        <Tile label="CAD-редактор" icon="create-outline" soon="Ф5" />
+        <Tile label="Трассы" icon="trail-sign-outline" soon="Ф5" />
       </View>
 
       <Text style={styles.groupTitle}>Данные</Text>
